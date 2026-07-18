@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Support outputting standalone container builds for Docker sizes if needed
-  output: 'standalone',
+  // 'standalone' output is for Docker/self-hosted deployments only.
+  // Vercel manages its own serverless output — do NOT set output here.
 };
 
 export default nextConfig;
