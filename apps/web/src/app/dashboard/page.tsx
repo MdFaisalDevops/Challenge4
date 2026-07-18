@@ -19,7 +19,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Code split heavy maps modules to boost initial page layout interactive latency (FID/TTI)
-const StadiumMap = dynamic(() => import('../../components/StadiumMap').then((mod) => mod.StadiumMap), {
+const StadiumMap = nextDynamic(() => import('../../components/StadiumMap').then((mod) => mod.StadiumMap), {
   ssr: false,
   loading: () => (
     <div className="h-full w-full flex items-center justify-center bg-slate-900 border border-white/5 rounded-2xl min-h-[350px]">
