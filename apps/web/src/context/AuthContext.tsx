@@ -12,12 +12,13 @@ import {
   User as FirebaseUser,
 } from 'firebase/auth';
 import { User, UserRole } from '../lib/types';
-import { auth } from '../lib/firebase';
+import { auth, isFirebaseConfigured } from '../lib/firebase';
 
 interface AuthContextType {
   user: User | null;
   firebaseUser: FirebaseUser | null;
   loading: boolean;
+  firebaseReady: boolean;
   login: (email: string, pass: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   loginAnonymously: () => Promise<void>;
@@ -91,6 +92,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
+    // If Firebase env vars are not configured, skip auth listener entirely
+    // so the app renders instead of hanging on a black screen
+    if (!isFirebaseConfigured) {
+      setLoading(false);
+      return;
+    }
+
     // onIdTokenChanged fires on sign-in/sign-out and background token rotations (session management)
     const unsubscribe = onIdTokenChanged(auth, async (fbUser) => {
       setFirebaseUser(fbUser);
@@ -182,6 +190,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         firebaseUser,
         loading,
+        firebaseReady: isFirebaseConfigured,
         login,
         loginWithGoogle,
         loginAnonymously,

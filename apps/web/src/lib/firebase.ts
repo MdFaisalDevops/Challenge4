@@ -8,12 +8,17 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Guard: Firebase Client SDK only works in the browser.
-// Accessing it during SSR/static generation at build time causes crashes.
+// True when running in the browser AND all required env vars are present
+export const isFirebaseConfigured =
+  typeof window !== 'undefined' &&
+  Boolean(firebaseConfig.apiKey) &&
+  Boolean(firebaseConfig.projectId) &&
+  Boolean(firebaseConfig.appId);
+
 let app: FirebaseApp;
 let auth: Auth;
 
-if (typeof window !== 'undefined') {
+if (isFirebaseConfigured) {
   app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
   auth = getAuth(app);
 
@@ -27,7 +32,7 @@ if (typeof window !== 'undefined') {
     }
   }
 } else {
-  // Server-side stub — never actually called at runtime, only satisfies module resolution
+  // Server-side or missing env vars — safe stubs, never called at runtime
   app = {} as FirebaseApp;
   auth = {} as Auth;
 }
