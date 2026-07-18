@@ -3,7 +3,7 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
-import { UserRole } from '@crowdmind/shared';
+import { UserRole } from '../lib/types';
 
 interface AuthGuardProps {
   children: React.ReactNode;

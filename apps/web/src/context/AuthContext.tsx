@@ -11,7 +11,7 @@ import {
   signInAnonymously,
   User as FirebaseUser,
 } from 'firebase/auth';
-import { User, UserRole } from '@crowdmind/shared';
+import { User, UserRole } from '../lib/types';
 import { auth } from '../lib/firebase';
 
 interface AuthContextType {

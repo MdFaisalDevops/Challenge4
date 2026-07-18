@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { AuthGuard } from '../../components/AuthGuard';
 import { useAuth } from '../../context/AuthContext';
 import { useAccessibility } from '../../context/AccessibilityContext';
-import { Recommendation } from '@crowdmind/shared';
+import { Recommendation } from '../../lib/types';
 import { 
   OverviewView, CrowdView, IncidentsView, TransportationView, 
   VolunteersView, SettingsView, ProfileView 

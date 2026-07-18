@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import { useAuth } from '../context/AuthContext';
 import { useAccessibility } from '../context/AccessibilityContext';
-import { Incident, TransportationRoute, Volunteer, User } from '@crowdmind/shared';
+import { Incident, TransportationRoute, Volunteer, User } from '../lib/types';
 
 // Mock chart data representing turnstile ingress rates and crowd densities
 const crowdFlowData = [

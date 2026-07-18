@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '../../context/AuthContext';
-import { UserRole } from '@crowdmind/shared';
+import { UserRole } from '../../lib/types';
 
 export default function SignupPage() {
   const { signUp } = useAuth();
