@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # Local Firestore Emulator for development
+  firestore-emulator:
+    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators
+    container_name: crowdmind-firestore-emulator
+    command: gcloud beta emulators firestore start --host-port=0.0.0.0:8080
+    ports:
+      - "8080:8080"
+    environment:
+      - FIRESTORE_PROJECT_ID=crowdmind-ai-dev
+
+  # Express Backend API
+  server:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    container_name: crowdmind-server
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - NODE_ENV=development
+      - FIREBASE_PROJECT_ID=crowdmind-ai-dev
+      - FIRESTORE_EMULATOR_HOST=firestore-emulator:8080
+    depends_on:
+      - firestore-emulator
+
+  # Next.js Frontend App
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: crowdmind-web
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:5000
+    depends_on:
+      - server

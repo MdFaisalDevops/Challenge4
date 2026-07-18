@@ -1,0 +1,42 @@
+name: CrowdMind AI GCP CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to Google Cloud Run
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write # Required for Workload Identity Federation OIDC auth
+
+    steps:
+      - name: Checkout Code Workspace
+        uses: actions/checkout@v4
+
+      # Authenticate to GCP using Workload Identity Federation (Recommended Production standard)
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          token_format: 'access_token'
+          # Replace variables with target GitHub Action secret configurations
+          workload_identity_provider: '${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}'
+          service_account: '${{ secrets.GCP_SERVICE_ACCOUNT }}'
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: '${{ secrets.GCP_PROJECT_ID }}'
+
+      # Submit the pipeline to Cloud Build referencing our cloudbuild.yaml script
+      - name: Submit Cloud Build Trigger
+        run: |
+          gcloud builds submit \
+            --config cloudbuild.yaml \
+            --substitutions=_API_URL="${{ secrets.NEXT_PUBLIC_API_URL }}",_GOOGLE_MAPS_KEY="${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}" \
+            --verbosity=info

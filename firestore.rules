@@ -1,0 +1,95 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function getUserRole() {
+      return getUserData().role;
+    }
+
+    function hasRole(roles) {
+      return isAuthenticated() && (getUserRole() in roles);
+    }
+
+    // --- 1. USERS COLLECTION ---
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      // Allow creation during signup, but validation must block setting arbitrary privileged roles unless admin
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isAuthenticated() && (
+        request.auth.uid == userId && request.resource.data.role == resource.data.role // Can't change own role
+        || hasRole(['OpsDirector'])
+      );
+      allow delete: if hasRole(['OpsDirector']);
+    }
+
+    // --- 2. CROWDDATA COLLECTION ---
+    match /CrowdData/{reportId} {
+      allow read: if isAuthenticated();
+      allow create: if hasRole(['OpsDirector', 'SecurityLead', 'FacilitiesMgr', 'FieldAgent']);
+      allow update, delete: if hasRole(['OpsDirector']);
+    }
+
+    // --- 3. RECOMMENDATIONS COLLECTION ---
+    match /recommendations/{recId} {
+      allow read: if isAuthenticated();
+      allow create: if hasRole(['OpsDirector', 'SecurityLead', 'system-ai']); // system-ai check or ops
+      allow update: if hasRole(['OpsDirector', 'SecurityLead']);
+      allow delete: if hasRole(['OpsDirector']);
+    }
+
+    // --- 4. INCIDENTS COLLECTION ---
+    match /incidents/{incidentId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if hasRole(['OpsDirector', 'SecurityLead']) || (
+        request.auth.uid == resource.data.reportedBy && request.resource.data.reportedBy == resource.data.reportedBy
+      );
+      allow delete: if hasRole(['OpsDirector']);
+    }
+
+    // --- 5. VOLUNTEERS COLLECTION ---
+    match /volunteers/{volunteerId} {
+      allow read: if isAuthenticated();
+      allow write: if hasRole(['OpsDirector', 'SecurityLead']);
+    }
+
+    // --- 6. NOTIFICATIONS COLLECTION ---
+    match /notifications/{notifyId} {
+      allow read: if isAuthenticated();
+      allow create: if hasRole(['OpsDirector', 'SecurityLead']);
+      allow update, delete: if hasRole(['OpsDirector']);
+    }
+
+    // --- 7. MEDICALREPORTS COLLECTION ---
+    match /MedicalReports/{reportId} {
+      allow read: if isAuthenticated();
+      allow create: if hasRole(['OpsDirector', 'SecurityLead', 'FieldAgent']);
+      allow update: if hasRole(['OpsDirector', 'SecurityLead', 'FieldAgent']);
+      allow delete: if hasRole(['OpsDirector']);
+    }
+
+    // --- 8. TRANSPORTATION COLLECTION ---
+    match /transportation/{routeId} {
+      allow read: if isAuthenticated();
+      allow create, update: if hasRole(['OpsDirector', 'FacilitiesMgr']);
+      allow delete: if hasRole(['OpsDirector']);
+    }
+
+    // --- 9. AUDITLOGS COLLECTION ---
+    match /AuditLogs/{logId} {
+      allow read: if hasRole(['OpsDirector']);
+      allow create: if isAuthenticated(); // Allow writing log events
+      allow update, delete: if false; // Audit logs must be immutable
+    }
+  }
+}
