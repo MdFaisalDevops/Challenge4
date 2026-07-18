@@ -56,7 +56,13 @@ const routes = {
   ],
 };
 
-const routeStyles = {
+interface RouteStyle {
+  strokeColor: string;
+  strokeWidth: number;
+  strokeDashArray?: string;
+}
+
+const routeStyles: Record<string, RouteStyle> = {
   fastest: { strokeColor: '#818cf8', strokeWidth: 6 }, // Indigo
   leastCrowded: { strokeColor: '#10b981', strokeWidth: 6 }, // Green
   wheelchair: { strokeColor: '#0ea5e9', strokeWidth: 6 }, // Sky Blue
